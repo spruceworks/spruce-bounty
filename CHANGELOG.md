@@ -25,3 +25,6 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   remove` and `/bountyadmin clear` now refund every contributor at
   `admin-actions.refund-percent` (default 100%) instead of burning their
   money as a side effect of moderation.
+- SPEC-ops-1 Part B: rechecked Folia 26.x availability (2026-07-24) via
+  PaperMC's Fill API — still only 26.1 has real builds, `folia-supported`
+  stays unset. README now cites the exact evidence instead of a bare claim.
