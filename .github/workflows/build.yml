@@ -20,6 +20,9 @@ jobs:
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v6
 
+      - name: Ensure gradlew is executable
+        run: chmod +x gradlew
+
       - name: Build
         run: ./gradlew build
 
