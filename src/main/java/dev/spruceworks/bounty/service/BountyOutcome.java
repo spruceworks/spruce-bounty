@@ -19,7 +19,10 @@ public final class BountyOutcome {
 
     public enum AdminRemoveStatus { SUCCESS, NOT_FOUND }
 
-    public record AdminRemoveResult(AdminRemoveStatus status) {
+    public record AdminRemoveResult(AdminRemoveStatus status, double refunded, int failedRefunds) {
+    }
+
+    public record AdminClearResult(int bountyCount, double refunded, int failedRefunds) {
     }
 
     public enum ClaimStatus { PAID, NO_BOUNTY, COOLDOWN, SAME_IP_BLOCKED, ECONOMY_UNAVAILABLE }

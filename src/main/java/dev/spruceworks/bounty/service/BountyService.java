@@ -6,6 +6,7 @@ import dev.spruceworks.bounty.math.CooldownGate;
 import dev.spruceworks.bounty.model.Bounty;
 import dev.spruceworks.bounty.model.Contribution;
 import dev.spruceworks.bounty.model.CooldownEntry;
+import dev.spruceworks.bounty.service.BountyOutcome.AdminClearResult;
 import dev.spruceworks.bounty.service.BountyOutcome.AdminRemoveResult;
 import dev.spruceworks.bounty.service.BountyOutcome.AdminRemoveStatus;
 import dev.spruceworks.bounty.service.BountyOutcome.CancelResult;
@@ -26,7 +27,10 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import net.milkbowl.vault.economy.Economy;
+import org.bukkit.Bukkit;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.slf4j.Logger;
 
 /**
  * Core bounty business logic: the in-memory cache, Vault economy calls, and
@@ -42,17 +46,19 @@ public final class BountyService {
     private final SchedulerAdapter scheduler;
     private final Economy economy;
     private final AntiAbuseService antiAbuse;
+    private final Logger logger;
 
     private final Map<UUID, Bounty> bounties = new ConcurrentHashMap<>();
     private final Map<UUID, Map<UUID, Instant>> cooldowns = new ConcurrentHashMap<>();
 
     public BountyService(ConfigManager configManager, BountyStorage storage, SchedulerAdapter scheduler,
-                          Economy economy, AntiAbuseService antiAbuse) {
+                          Economy economy, AntiAbuseService antiAbuse, Logger logger) {
         this.configManager = configManager;
         this.storage = storage;
         this.scheduler = scheduler;
         this.economy = economy;
         this.antiAbuse = antiAbuse;
+        this.logger = logger;
     }
 
     /** Loads all bounties and cooldowns from storage. Runs once, synchronously, during onEnable. */
@@ -140,20 +146,60 @@ public final class BountyService {
     }
 
     public AdminRemoveResult adminRemove(UUID target) {
-        Bounty removed = this.bounties.remove(target);
-        if (removed == null) {
-            return new AdminRemoveResult(AdminRemoveStatus.NOT_FOUND);
+        Bounty bounty = this.bounties.get(target);
+        if (bounty == null) {
+            return new AdminRemoveResult(AdminRemoveStatus.NOT_FOUND, 0, 0);
         }
+        RefundOutcome outcome = refundAllContributors(bounty);
+
+        this.bounties.remove(target);
         this.scheduler.runAsync(() -> this.storage.deleteBounty(target));
-        return new AdminRemoveResult(AdminRemoveStatus.SUCCESS);
+        return new AdminRemoveResult(AdminRemoveStatus.SUCCESS, outcome.total(), outcome.failedCount());
     }
 
-    /** @return how many bounties were cleared */
-    public int adminClear() {
+    /** @return how many bounties were cleared, how much was refunded in total, and how many refund deposits failed */
+    public AdminClearResult adminClear() {
         int count = this.bounties.size();
+        double totalRefunded = 0;
+        int failedRefunds = 0;
+        for (Bounty bounty : this.bounties.values()) {
+            RefundOutcome outcome = refundAllContributors(bounty);
+            totalRefunded += outcome.total();
+            failedRefunds += outcome.failedCount();
+        }
         this.bounties.clear();
         this.scheduler.runAsync(this.storage::deleteAllBounties);
-        return count;
+        return new AdminClearResult(count, totalRefunded, failedRefunds);
+    }
+
+    private record RefundOutcome(double total, int failedCount) {
+    }
+
+    /**
+     * Refunds every contributor on a bounty at admin-actions.refund-percent
+     * (default 100 — a moderation action must never read as the plugin
+     * keeping a player's money). Uses OfflinePlayer since contributors need
+     * not be online.
+     */
+    private RefundOutcome refundAllContributors(Bounty bounty) {
+        double refundPercent = this.configManager.config().getDouble("admin-actions.refund-percent");
+        double total = 0;
+        int failed = 0;
+        for (Contribution contribution : bounty.contributions()) {
+            double refund = BountyMath.refundAmount(contribution.amount(), refundPercent);
+            if (refund <= 0) {
+                continue;
+            }
+            OfflinePlayer placer = Bukkit.getOfflinePlayer(contribution.placer());
+            if (this.economy.depositPlayer(placer, refund).transactionSuccess()) {
+                total += refund;
+            } else {
+                failed++;
+                this.logger.error("Admin refund of {} to {} ({}) failed — economy plugin rejected the deposit.",
+                        refund, placer.getName(), contribution.placer());
+            }
+        }
+        return new RefundOutcome(total, failed);
     }
 
     public ClaimResult claim(Player killer, Player victim) {

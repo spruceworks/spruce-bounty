@@ -6,6 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.spruceworks.bounty.SpruceBountyPlugin;
 import dev.spruceworks.bounty.model.Bounty;
+import dev.spruceworks.bounty.service.BountyOutcome.AdminClearResult;
 import dev.spruceworks.bounty.service.BountyOutcome.AdminRemoveResult;
 import dev.spruceworks.bounty.service.BountyService;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
@@ -65,8 +66,12 @@ public final class BountyAdminCommand {
         AdminRemoveResult result = this.bountyService.adminRemove(target);
         String displayName = PlayerLookup.displayName(target, name);
         switch (result.status()) {
-            case SUCCESS -> this.plugin.messages().send(sender, "admin-remove-success",
-                    Placeholder.unparsed("target", displayName));
+            case SUCCESS -> {
+                this.plugin.messages().send(sender, "admin-remove-success",
+                        Placeholder.unparsed("target", displayName),
+                        Placeholder.unparsed("refund", this.plugin.economy().format(result.refunded())));
+                warnIfRefundsFailed(sender, result.failedRefunds());
+            }
             case NOT_FOUND -> this.plugin.messages().send(sender, "admin-remove-not-found",
                     Placeholder.unparsed("target", displayName));
         }
@@ -74,10 +79,20 @@ public final class BountyAdminCommand {
     }
 
     private int clear(CommandContext<CommandSourceStack> context) {
-        int count = this.bountyService.adminClear();
-        this.plugin.messages().send(context.getSource().getSender(), "admin-clear-success",
-                Placeholder.unparsed("count", String.valueOf(count)));
+        CommandSender sender = context.getSource().getSender();
+        AdminClearResult result = this.bountyService.adminClear();
+        this.plugin.messages().send(sender, "admin-clear-success",
+                Placeholder.unparsed("count", String.valueOf(result.bountyCount())),
+                Placeholder.unparsed("refund", this.plugin.economy().format(result.refunded())));
+        warnIfRefundsFailed(sender, result.failedRefunds());
         return Command.SINGLE_SUCCESS;
+    }
+
+    private void warnIfRefundsFailed(CommandSender sender, int failedRefunds) {
+        if (failedRefunds > 0) {
+            this.plugin.messages().send(sender, "admin-refund-partial-failure",
+                    Placeholder.unparsed("count", String.valueOf(failedRefunds)));
+        }
     }
 
     private int reload(CommandContext<CommandSourceStack> context) {

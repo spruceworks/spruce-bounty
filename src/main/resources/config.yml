@@ -24,6 +24,13 @@ cancel:
   # Only applies while the bounty is unclaimed.
   refund-percent: 75.0
 
+admin-actions:
+  # Refund % paid to EVERY contributor when an admin uses /bountyadmin
+  # remove or clear. Defaults to a full refund on purpose: burning a
+  # player's money via a moderation action reads as the plugin stealing
+  # from them, not as moderation, and is a guaranteed 1-star review.
+  refund-percent: 100.0
+
 claim:
   # Also show a title/subtitle (see messages.yml) to every online player
   # when a bounty is claimed, in addition to the chat broadcast.

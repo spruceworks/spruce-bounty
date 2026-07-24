@@ -2,7 +2,7 @@ name: SpruceBounty
 version: '${version}'
 main: dev.spruceworks.bounty.SpruceBountyPlugin
 api-version: '26.2'
-description: Free bounty plugin for Donut-like / Lifesteal SMPs — built for 26.2, Folia-aware.
+description: Free bounty plugin for Donut-like / Lifesteal SMPs — built for 26.2.
 authors: [SpruceWorks]
 website: https://github.com/spruceworks/spruce-bounty
 
