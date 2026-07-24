@@ -1,0 +1,20 @@
+# Gradle
+.gradle/
+build/
+
+# run-paper local test server (world data, EULA, downloaded server jars)
+run/
+
+# IDEs
+.idea/
+*.iml
+.vscode/
+.settings/
+.classpath
+.project
+bin/
+out/
+
+# OS
+.DS_Store
+Thumbs.db

@@ -1,0 +1,38 @@
+name: SpruceBounty
+version: '${version}'
+main: dev.spruceworks.bounty.SpruceBountyPlugin
+api-version: '26.2'
+description: Free bounty plugin for Donut-like / Lifesteal SMPs — built for 26.2, Folia-aware.
+authors: [SpruceWorks]
+website: https://github.com/spruceworks/spruce-bounty
+
+# Vault is soft, not hard: a hard `depend` makes Paper's loader reject the
+# whole plugin with an UnknownDependencyException stack trace before
+# onEnable() ever runs, which would skip our own graceful "log and disable"
+# handling in SpruceBountyPlugin. softdepend still guarantees load-after-Vault
+# ordering when Vault is present; the plugin enables and self-disables
+# cleanly when it is not.
+softdepend: [Vault, PlaceholderAPI]
+
+permissions:
+  sprucebounty.set:
+    description: Place a bounty with /bounty set (or the implicit /bounty <player> <amount>).
+    default: true
+  sprucebounty.list:
+    description: Open the bounty list GUI with /bounty list.
+    default: true
+  sprucebounty.check:
+    description: Check a bounty with /bounty check.
+    default: true
+  sprucebounty.top:
+    description: View the top 10 bounties with /bounty top.
+    default: true
+  sprucebounty.cancel:
+    description: Cancel your own bounty on a player with /bounty cancel.
+    default: true
+  sprucebounty.admin:
+    description: Grants access to /bountyadmin (remove, clear, reload).
+    default: op
+  sprucebounty.immune:
+    description: Players with this permission cannot have a bounty placed on them.
+    default: false
