@@ -15,4 +15,13 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   killer→victim cooldown and same-IP guard, paginated bounty-list GUI,
   PlaceholderAPI expansion, SQLite storage behind a versioned interface, unit
   tests for the money math and cooldown gate.
-- Not yet published to any marketplace — pending strategy-session code review.
+- Not yet published to any marketplace.
+
+### Changed
+
+- Strategy-session code review fixes: removed the unverified "Folia-aware"
+  claim from `plugin.yml`'s description (Folia support stays "in testing" in
+  the README until an actual Folia 26.x boot is verified); `/bountyadmin
+  remove` and `/bountyadmin clear` now refund every contributor at
+  `admin-actions.refund-percent` (default 100%) instead of burning their
+  money as a side effect of moderation.

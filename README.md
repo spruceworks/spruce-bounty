@@ -1,10 +1,17 @@
 # SpruceBounty
 
 Free bounty plugin for Donut-like / Lifesteal SMPs. Built for **Paper 26.2**,
-**Java 25**, updated within 72h of every Paper drop, Folia-aware. Part of the
-SpruceWorks free funnel — see the closest modern competitor, BetterBounty, for
-context on the bar this matches and beats (26.2 support day one, anti-abuse,
+**Java 25**, updated within 72h of every Paper drop. Part of the SpruceWorks
+free funnel — see the closest modern competitor, BetterBounty, for context on
+the bar this matches and beats (26.2 support day one, anti-abuse,
 PlaceholderAPI, a premium upgrade path).
+
+**Folia support: in testing.** All scheduler access goes through
+`SchedulerAdapter`, but it currently only wraps the standard Bukkit
+scheduler — no Folia region/entity scheduler path exists yet. `folia-
+supported` is deliberately unset in `plugin.yml` until a Folia 26.x build is
+actually booted and set/claim is verified there. We never claim what we
+haven't run.
 
 ## Requirements
 
@@ -24,8 +31,8 @@ PlaceholderAPI, a premium upgrade path).
 | `/bounty check [player]` | `sprucebounty.check` | Defaults to yourself. |
 | `/bounty top` | `sprucebounty.top` | Top 10 by amount. |
 | `/bounty cancel <player>` | `sprucebounty.cancel` | Refunds your own contribution only (config `cancel.refund-percent`, default 75%). |
-| `/bountyadmin remove <player>` | `sprucebounty.admin` | Removes the whole bounty, no refund. |
-| `/bountyadmin clear` | `sprucebounty.admin` | Clears every bounty, no refund. |
+| `/bountyadmin remove <player>` | `sprucebounty.admin` | Removes the whole bounty, refunding every contributor (config `admin-actions.refund-percent`, default 100%). |
+| `/bountyadmin clear` | `sprucebounty.admin` | Clears every bounty, refunding every contributor the same way. |
 | `/bountyadmin reload` | `sprucebounty.admin` | Reloads config.yml + messages.yml. |
 
 `sprucebounty.immune` (default: false) stops a bounty from being placed on
@@ -40,6 +47,11 @@ that player.
 - No self-bounty; no bounty on `sprucebounty.immune` players.
 - Per killer→victim claim cooldown (default 30 minutes): a repeat kill during
   the cooldown pays nothing and **keeps the bounty active**.
+- The cooldown is keyed by the killer→victim *pair*, not by a specific
+  bounty. If a killer claims a bounty on a victim and someone immediately
+  places a brand-new bounty on that same victim, the same killer still can't
+  get paid for killing them again until the cooldown expires. This is
+  intended anti-farm behavior, not a bug.
 - Kills between players sharing an IP are ignored by default
   (`anti-abuse.ignore-same-ip-kills`).
 - Non-player damage never pays out (Bukkit only sets a PvP killer on

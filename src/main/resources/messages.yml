@@ -35,9 +35,10 @@ top-empty: "<prefix> <gray>There are no active bounties right now.</gray>"
 cancel-success: "<prefix> <green>Bounty on <white><target></white> cancelled — refunded <white><refund></white>.</green>"
 cancel-not-found: "<prefix> <red>You have no bounty placed on <white><target></white>.</red>"
 
-admin-remove-success: "<prefix> <green>Removed the bounty on <white><target></white> (no refund).</green>"
+admin-remove-success: "<prefix> <green>Removed the bounty on <white><target></white> — refunded <white><refund></white> to its contributor(s).</green>"
 admin-remove-not-found: "<prefix> <red><target> has no active bounty to remove.</red>"
-admin-clear-success: "<prefix> <green>Cleared <white><count></white> bounty(ies) (no refund).</green>"
+admin-clear-success: "<prefix> <green>Cleared <white><count></white> bounty(ies) — refunded <white><refund></white> total.</green>"
+admin-refund-partial-failure: "<prefix> <yellow><count> refund(s) failed (the economy plugin rejected the deposit) — check the console.</yellow>"
 
 claim-broadcast: "<prefix> <gold><killer></gold> <gray>claimed the</gray> <gold><amount></gold> <gray>bounty on</gray> <gold><victim></gold><gray>!</gray>"
 claim-broadcast-title: "<gold><bold><killer></bold></gold>"

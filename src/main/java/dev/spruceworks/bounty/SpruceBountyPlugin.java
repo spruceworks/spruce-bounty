@@ -83,7 +83,8 @@ public final class SpruceBountyPlugin extends JavaPlugin {
         this.storage.open();
 
         AntiAbuseService antiAbuse = new AntiAbuseService(this.configManager);
-        this.bountyService = new BountyService(this.configManager, this.storage, this.scheduler, this.economy, antiAbuse);
+        this.bountyService = new BountyService(this.configManager, this.storage, this.scheduler, this.economy,
+                antiAbuse, getSLF4JLogger());
         this.bountyService.loadFromStorage();
 
         BountyCommand.register(this);
