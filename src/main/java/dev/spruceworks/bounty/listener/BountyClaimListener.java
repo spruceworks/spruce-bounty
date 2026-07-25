@@ -45,14 +45,21 @@ public final class BountyClaimListener implements Listener {
         TagResolver victimTag = Placeholder.unparsed("victim", victim.getName());
         TagResolver amountTag = Placeholder.unparsed("amount", this.plugin.economy().format(result.amount()));
 
-        Bukkit.getOnlinePlayers().forEach(viewer ->
-                this.plugin.messages().send(viewer, "claim-broadcast", killerTag, victimTag, amountTag));
+        // Players who turned bounty broadcasts off in /settings are skipped.
+        // Without SpruceSettings installed this always returns true, so the
+        // behaviour is unchanged from a plain SpruceBounty install.
+        Bukkit.getOnlinePlayers().stream()
+                .filter(viewer -> this.plugin.settingsHook().wantsBroadcasts(viewer.getUniqueId()))
+                .forEach(viewer ->
+                        this.plugin.messages().send(viewer, "claim-broadcast", killerTag, victimTag, amountTag));
 
         if (this.plugin.configManager().config().getBoolean("claim.broadcast-title")) {
             Title title = Title.title(
                     this.plugin.messages().get("claim-broadcast-title", killerTag, victimTag, amountTag),
                     this.plugin.messages().get("claim-broadcast-subtitle", killerTag, victimTag, amountTag));
-            Bukkit.getOnlinePlayers().forEach(viewer -> viewer.showTitle(title));
+            Bukkit.getOnlinePlayers().stream()
+                    .filter(viewer -> this.plugin.settingsHook().wantsBroadcasts(viewer.getUniqueId()))
+                    .forEach(viewer -> viewer.showTitle(title));
         }
     }
 }

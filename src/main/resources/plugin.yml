@@ -12,7 +12,7 @@ website: https://github.com/spruceworks/spruce-bounty
 # handling in SpruceBountyPlugin. softdepend still guarantees load-after-Vault
 # ordering when Vault is present; the plugin enables and self-disables
 # cleanly when it is not.
-softdepend: [Vault, PlaceholderAPI]
+softdepend: [Vault, PlaceholderAPI, SpruceSettings]
 
 permissions:
   sprucebounty.set:

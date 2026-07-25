@@ -7,6 +7,7 @@ import dev.spruceworks.bounty.config.Messages;
 import dev.spruceworks.bounty.gui.GuiListener;
 import dev.spruceworks.bounty.listener.BountyClaimListener;
 import dev.spruceworks.bounty.placeholder.SprucePlaceholderExpansion;
+import dev.spruceworks.bounty.settings.SettingsHook;
 import dev.spruceworks.bounty.service.AntiAbuseService;
 import dev.spruceworks.bounty.service.BountyService;
 import dev.spruceworks.bounty.storage.BountyStorage;
@@ -30,6 +31,7 @@ public final class SpruceBountyPlugin extends JavaPlugin {
     private BountyService bountyService;
     private Economy economy;
     private Metrics metrics;
+    private SettingsHook settingsHook;
 
     @Override
     public void onEnable() {
@@ -90,6 +92,10 @@ public final class SpruceBountyPlugin extends JavaPlugin {
         BountyCommand.register(this);
         BountyAdminCommand.register(this);
 
+        // Optional SpruceSettings integration — no-op when that plugin is absent.
+        this.settingsHook = new SettingsHook(getSLF4JLogger());
+        this.settingsHook.install();
+
         getServer().getPluginManager().registerEvents(new BountyClaimListener(this), this);
         getServer().getPluginManager().registerEvents(new GuiListener(this), this);
 
@@ -135,6 +141,10 @@ public final class SpruceBountyPlugin extends JavaPlugin {
 
     public BountyService bountyService() {
         return this.bountyService;
+    }
+
+    public SettingsHook settingsHook() {
+        return this.settingsHook;
     }
 
     public Economy economy() {
