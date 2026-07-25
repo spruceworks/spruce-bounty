@@ -4,7 +4,7 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.0] - 2026-07-25
 
 ### Added
 
@@ -28,3 +28,5 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - SPEC-ops-1 Part B: rechecked Folia 26.x availability (2026-07-24) via
   PaperMC's Fill API — still only 26.1 has real builds, `folia-supported`
   stays unset. README now cites the exact evidence instead of a bare claim.
+- Registered the real bStats service id (32880) in place of the placeholder,
+  so metrics report under this plugin's own listing.
