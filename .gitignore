@@ -5,6 +5,9 @@ build/
 # run-paper local test server (world data, EULA, downloaded server jars)
 run/
 
+# human-QA live server (world data, EULA, downloaded server/plugin jars)
+qa-live/
+
 # IDEs
 .idea/
 *.iml
