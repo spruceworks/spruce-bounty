@@ -19,8 +19,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public final class SpruceBountyPlugin extends JavaPlugin {
 
-    /** bStats service id — create one for this plugin at https://bstats.org and put it here. */
-    private static final int BSTATS_SERVICE_ID = 0;
+    /** bStats service id — https://bstats.org/plugin/bukkit/SpruceBounty/32880 */
+    private static final int BSTATS_SERVICE_ID = 32880;
     private static final long COOLDOWN_SWEEP_PERIOD_TICKS = 20L * 60 * 30; // 30 minutes
 
     private ConfigManager configManager;
