@@ -48,6 +48,23 @@ that player.
 
 `%sprucebounty_own%` · `%sprucebounty_top_name%` · `%sprucebounty_top_amount%`
 
+## Optional: SpruceSettings integration
+
+If [SpruceSettings](https://github.com/spruceworks/spruce-settings) is
+installed, players get a **"Bounty broadcasts"** toggle in `/settings` that
+controls whether claim announcements reach them. Some players want the
+chatter, some don't; this lets them choose without an admin turning it off
+server-wide.
+
+Nothing to configure — the toggle registers itself when both plugins are
+present.
+
+**No dependency in either direction.** Without SpruceSettings, SpruceBounty
+behaves exactly as it always has and broadcasts reach everyone. The hook is
+reflective, so there is no shaded API, no version coupling, and every failure
+path (plugin absent, service unregistered, method renamed) degrades to
+"broadcasts visible" rather than breaking anything.
+
 ## Anti-abuse
 
 - No self-bounty; no bounty on `sprucebounty.immune` players.
