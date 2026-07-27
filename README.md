@@ -6,11 +6,12 @@ free funnel — see the closest modern competitor, BetterBounty, for context on
 the bar this matches and beats (26.2 support day one, anti-abuse,
 PlaceholderAPI, a premium upgrade path).
 
-**Folia support: in testing — waiting on Folia 26.x.** Checked 2026-07-24
-against PaperMC's own Fill download API (`fill.papermc.io/v3/projects/folia`):
-the only version with actual builds is **26.1**; a `ver/26.2.x` branch exists
-on [PaperMC/Folia](https://github.com/PaperMC/Folia) but has produced no
-downloadable build yet. All scheduler access already goes through
+**Folia: not supported.** Rechecked 2026-07-27 — the newest Folia build is
+**26.1.2-8** (June 2026); a `ver/26.2.x` branch exists on
+[PaperMC/Folia](https://github.com/PaperMC/Folia) but has produced no
+downloadable build, so there is nothing to test against. Calling this "in
+testing" would overstate it: no testing is happening, because it cannot.
+All scheduler access already goes through
 `SchedulerAdapter`, but it currently only wraps the standard Bukkit
 scheduler — no Folia region/global/async scheduler path exists yet, since
 there is nothing to boot and verify it against. `folia-supported` stays
