@@ -85,7 +85,7 @@ path (plugin absent, service unregistered, method renamed) degrades to
 - `storage/` — `BountyStorage` interface + `SqliteBountyStorage` (schema
   v1, WAL mode, single synchronized connection — no pooling library for a
   single embedded file). A MySQL implementation is a config change away, not
-  a rewrite (CLAUDE.md storage standard).
+  a rewrite.
 - `math/` — `BountyMath` (tax burn, refund %, stacking) and `CooldownGate`,
   pure functions with no Bukkit dependency, covered by unit tests.
 - `service/` — `BountyService` (in-memory cache + Vault + async persistence)

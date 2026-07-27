@@ -9,7 +9,7 @@ import java.util.UUID;
 /**
  * Persistence for bounties and claim cooldowns. SQLite is the only
  * implementation today (see SqliteBountyStorage); a MySQL implementation is
- * a config-driven swap behind this interface, not a rewrite, per CLAUDE.md.
+ * a config-driven swap behind this interface, not a rewrite.
  *
  * <p>{@link #open()} and the load methods run once during plugin startup.
  * Every other method is called off the main thread via the scheduler
