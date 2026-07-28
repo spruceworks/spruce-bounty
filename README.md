@@ -28,7 +28,9 @@ claim what we haven't run. Tracked as a recheck-every-drop item on the
   plugin logs a clear error and disables itself if neither is present.
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
   is optional; placeholders are only registered if it's installed.
-- **Outbound internet access on the first start after installing.** The SQLite
+- **1.0.1 and later only: outbound internet access on the first start after
+  installing.** 1.0.0 bundles the driver and needs no network at any point —
+  if you downloaded that build, ignore this requirement. In 1.0.1 the SQLite
   driver is not bundled — it is declared in `plugin.yml`'s `libraries:` block
   and Paper downloads it from Maven Central the first time the plugin loads.
   It is then cached in your server's `libraries/` folder and every later start
