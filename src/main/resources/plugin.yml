@@ -6,6 +6,15 @@ description: Free bounty plugin for Donut-like / Lifesteal SMPs — built for 26
 authors: [SpruceWorks]
 website: https://github.com/spruceworks/spruce-bounty
 
+# Fetched by Paper's library loader on first start, not bundled. Shading it
+# added ~24 MB of per-platform native binaries and put the jar over
+# SpigotMC's upload limit.
+# NOTE FOR SERVER OWNERS: the first start after installing needs outbound
+# access to Maven Central. Once downloaded the driver is cached under the
+# server's libraries/ folder and later starts work offline.
+libraries:
+  - org.xerial:sqlite-jdbc:${sqliteJdbcVersion}
+
 # Vault is soft, not hard: a hard `depend` makes Paper's loader reject the
 # whole plugin with an UnknownDependencyException stack trace before
 # onEnable() ever runs, which would skip our own graceful "log and disable"

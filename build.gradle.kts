@@ -5,8 +5,13 @@ plugins {
 }
 
 group = "dev.spruceworks"
-version = "1.0.0"
+version = "1.0.1"
 description = "SpruceBounty — free bounty plugin for Donut-like / Lifesteal SMPs"
+
+// Single source of truth for the runtime-downloaded driver. processResources
+// substitutes it into plugin.yml's `libraries:` block, so the compile
+// classpath and what the server actually fetches can never drift apart.
+val sqliteJdbcVersion = "3.49.1.0"
 
 java {
     // Paper 26.x requires Java 25 (https://docs.papermc.io/paper/dev/project-setup/).
@@ -34,8 +39,16 @@ dependencies {
     }
     compileOnly("me.clip:placeholderapi:2.12.3")
 
+    // bStats stays shaded: 53 KB, and metrics must not depend on the server
+    // reaching a Maven repo at startup.
     implementation("org.bstats:bstats-bukkit:3.1.0")
-    implementation("org.xerial:sqlite-jdbc:3.49.1.0")
+
+    // sqlite-jdbc is NOT shaded. Its native binaries for every platform are
+    // ~24 MB of the jar and pushed us over SpigotMC's upload limit. It is
+    // declared in plugin.yml's `libraries:` block instead, so Paper's library
+    // loader fetches it from Maven Central on first start.
+    compileOnly("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
+    testImplementation("org.xerial:sqlite-jdbc:$sqliteJdbcVersion")
 
     testImplementation(platform("org.junit:junit-bom:5.12.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
@@ -49,7 +62,10 @@ tasks {
 
     processResources {
         filteringCharset = Charsets.UTF_8.name()
-        val props = mapOf("version" to project.version.toString())
+        val props = mapOf(
+            "version" to project.version.toString(),
+            "sqliteJdbcVersion" to sqliteJdbcVersion,
+        )
         inputs.properties(props)
         filesMatching("plugin.yml") {
             expand(props)
@@ -67,18 +83,31 @@ tasks {
 
     shadowJar {
         archiveClassifier.set("")
-        // Rewrites META-INF/services/* content too, not just class file locations —
-        // required for sqlite-jdbc's JDBC 4 auto-registration to survive relocation.
-        // Service files are explicitly allowed to merge; everything else keeps the
-        // default EXCLUDE so unrelated duplicate resources don't silently bloat the jar.
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
         mergeServiceFiles()
         filesMatching("META-INF/services/**") {
             duplicatesStrategy = DuplicatesStrategy.INCLUDE
         }
-        // Relocate bundled runtime deps so they cannot clash with other plugins that bundle them.
+        // Only bStats is bundled now, relocated so it cannot clash with another
+        // plugin that bundles its own copy. sqlite-jdbc is fetched at runtime by
+        // Paper's library loader and is deliberately absent from this jar.
         relocate("org.bstats", "dev.spruceworks.bounty.libs.bstats")
-        relocate("org.sqlite", "dev.spruceworks.bounty.libs.sqlite")
+
+        doLast {
+            val jar = archiveFile.get().asFile
+            val mb = jar.length() / 1024.0 / 1024.0
+            logger.lifecycle("shadowJar: ${jar.name} = %.2f MB".format(mb))
+            // Guard against a dependency silently becoming bundled again and
+            // pushing us back over the marketplace upload limit.
+            zipTree(jar).matching { include("**/sqlite/**", "**/org/sqlite/**") }
+                .files.firstOrNull()?.let {
+                    throw GradleException(
+                        "sqlite-jdbc was shaded into the jar again (found ${it.name}). " +
+                        "It must stay in plugin.yml's libraries: block — see the " +
+                        "comment on the dependency declaration."
+                    )
+                }
+        }
     }
 
     assemble {

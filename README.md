@@ -28,6 +28,15 @@ claim what we haven't run. Tracked as a recheck-every-drop item on the
   plugin logs a clear error and disables itself if neither is present.
 - [PlaceholderAPI](https://www.spigotmc.org/resources/placeholderapi.6245/)
   is optional; placeholders are only registered if it's installed.
+- **Outbound internet access on the first start after installing.** The SQLite
+  driver is not bundled — it is declared in `plugin.yml`'s `libraries:` block
+  and Paper downloads it from Maven Central the first time the plugin loads.
+  It is then cached in your server's `libraries/` folder and every later start
+  works completely offline. This keeps the download at ~97 KB instead of
+  ~14 MB, because the bundled driver ships native binaries for every platform.
+  If your box has no outbound access at all, fetch
+  `org.xerial:sqlite-jdbc:3.49.1.0` once on a machine that does and copy it
+  into `libraries/org/xerial/sqlite-jdbc/3.49.1.0/`.
 
 ## Commands
 

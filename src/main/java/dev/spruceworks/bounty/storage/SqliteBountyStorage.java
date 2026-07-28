@@ -25,14 +25,22 @@ import org.slf4j.Logger;
  * writers internally anyway, so this avoids pulling in a pooling library for
  * a single-file embedded database.
  *
- * <p>Driver registration relies on JDBC 4 auto-discovery via
- * {@code META-INF/services/java.sql.Driver} (shadowJar relocates that file's
- * contents along with the class), not an explicit {@code Class.forName} —
- * a string literal class name would not survive relocation.
+ * <p>The driver is no longer shaded into the plugin jar — it is declared in
+ * plugin.yml's {@code libraries:} block and fetched by Paper's library loader,
+ * so {@code org.sqlite} keeps its real package name and a string literal is
+ * safe again.
+ *
+ * <p>We register it explicitly rather than leaning on JDBC 4 auto-discovery.
+ * {@link DriverManager} finds drivers through a {@code ServiceLoader} scan
+ * bound to the thread context classloader, and during plugin enable that is
+ * not guaranteed to be the classloader holding our libraries. An explicit
+ * load also turns "the download failed" into one clear message instead of a
+ * confusing "No suitable driver found".
  */
 public final class SqliteBountyStorage implements BountyStorage {
 
     private static final int SCHEMA_VERSION = 1;
+    private static final String DRIVER_CLASS = "org.sqlite.JDBC";
 
     private final File databaseFile;
     private final Logger logger;
@@ -45,6 +53,15 @@ public final class SqliteBountyStorage implements BountyStorage {
 
     @Override
     public synchronized void open() {
+        try {
+            Class.forName(DRIVER_CLASS);
+        } catch (ClassNotFoundException e) {
+            throw new StorageException(
+                    "SQLite driver " + DRIVER_CLASS + " is not on the classpath. It is downloaded"
+                            + " at startup via the libraries: block in plugin.yml — check that the"
+                            + " server had outbound access to Maven Central on its first start"
+                            + " after installing SpruceBounty.", e);
+        }
         try {
             File parent = this.databaseFile.getParentFile();
             if (parent != null) {

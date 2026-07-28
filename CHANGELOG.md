@@ -4,6 +4,31 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2026-07-28
+
+### Changed
+
+- **Packaging: the SQLite driver is no longer bundled.** `org.xerial:sqlite-jdbc`
+  is declared in `plugin.yml`'s `libraries:` block and fetched by Paper's
+  library loader at startup instead of being shaded in. The bundled driver
+  carried native binaries for every supported platform — about 24 MB of the
+  jar — which pushed the download over SpigotMC's upload limit.
+  **Jar size: 13.76 MB → 97 KB.**
+- The driver is now registered explicitly rather than through JDBC 4
+  auto-discovery, so a failed download reports one clear message instead of
+  "No suitable driver found".
+
+### Upgrade note
+
+**The first server start after installing needs outbound access to Maven
+Central**, so the driver can be downloaded. It is then cached in the server's
+`libraries/` folder and every later start works offline. Nothing else changes:
+existing `bounty.db` files are read unchanged — verified by loading a database
+written by 1.0.0 and confirming all rows survive a restart.
+
+bStats stays bundled (53 KB), so metrics never depend on a network fetch at
+startup.
+
 ## [1.0.0] - 2026-07-25
 
 ### Added
