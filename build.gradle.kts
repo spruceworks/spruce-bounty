@@ -2,6 +2,10 @@ plugins {
     java
     id("com.gradleup.shadow") version "9.6.1"
     id("xyz.jpenilla.run-paper") version "3.0.2"
+    // Modrinth's own publishing plugin. Used by the release pipeline; running
+    // `./gradlew modrinth` locally without MODRINTH_TOKEN simply fails, it
+    // cannot publish by accident.
+    id("com.modrinth.minotaur") version "2.+"
 }
 
 group = "dev.spruceworks"
@@ -118,4 +122,34 @@ tasks {
         // Downloads this Paper version and boots a local test server with the plugin installed.
         minecraftVersion("26.2")
     }
+}
+
+modrinth {
+    // Project ID, not the slug: a slug can be renamed and would break the
+    // pipeline silently, at the worst possible moment.
+    projectId.set("KJ7ESaxJ")
+    token.set(providers.environmentVariable("MODRINTH_TOKEN"))
+
+    versionNumber.set(project.version.toString())
+    versionName.set("SpruceBounty ${project.version}")
+    versionType.set("release")
+
+    // Publish the exact artifact the release pipeline already gated. shadowJar
+    // is up to date by then, so this uploads that file rather than rebuilding.
+    uploadFile.set(tasks.shadowJar)
+
+    // Only what we have actually run. 26.1 was never tested, so it is not listed.
+    gameVersions.addAll("26.2")
+    // Pure Paper API, api-version 26.2 — we do not claim Spigot or Bukkit.
+    loaders.addAll("paper")
+
+    // Written by the pipeline's gate step from CHANGELOG.md. Empty locally,
+    // which is fine: a local run is a rehearsal, not a release.
+    changelog.set(
+        providers.fileContents(layout.projectDirectory.file("release-notes.md"))
+            .asText.orElse("")
+    )
+
+    // Deliberately NOT syncing the project description from README.md —
+    // syncBodyFrom would overwrite the hand-written marketplace listing.
 }

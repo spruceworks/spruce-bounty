@@ -1,0 +1,35 @@
+name: release
+
+# Publishing runs ONLY from a signed tag that Huy creates. Never on merge.
+#
+#   git tag -s v1.0.2 -m "SpruceBounty 1.0.2"
+#   git push origin v1.0.2
+#
+# Rehearse first: Actions -> release -> Run workflow -> dry-run = true.
+# All gates run for real; nothing is uploaded anywhere.
+#
+# Hangar is not configured yet — the project does not exist on hangar.papermc.io.
+# Add `hangar-slug: SpruceWorks/SpruceBounty` once it does and that target
+# turns on with no other change.
+#
+# SpigotMC is never automated: no API, and browser automation risks the account.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: Run every gate, publish nothing
+        type: boolean
+        default: true
+
+jobs:
+  release:
+    uses: spruceworks/release-pipeline/.github/workflows/release.yml@main
+    with:
+      plugin-name: SpruceBounty
+      modrinth-project-id: KJ7ESaxJ
+      max-jar-bytes: 10485760          # 10 MB — we ship ~97 KB
+      dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
+    secrets: inherit
