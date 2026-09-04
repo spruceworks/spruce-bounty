@@ -125,9 +125,13 @@ tasks {
 }
 
 modrinth {
-    // Project ID, not the slug: a slug can be renamed and would break the
-    // pipeline silently, at the worst possible moment.
-    projectId.set("KJ7ESaxJ")
+    // PROJECT id, not the slug and not the organisation id. All three look
+    // alike (8 base62 chars). A slug can be renamed; the organisation id
+    // (KJ7ESaxJ, "SpruceWorks") is what the project page URL bar hands you if
+    // you copy it from the wrong place — and Minotaur would then 404 on the
+    // first real publish. Verify with:
+    //   curl -s https://api.modrinth.com/v2/project/sprucebounty | jq .id
+    projectId.set("ddUqbWL3")
     token.set(providers.environmentVariable("MODRINTH_TOKEN"))
 
     versionNumber.set(project.version.toString())
