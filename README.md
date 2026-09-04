@@ -2,7 +2,7 @@
 
 **Download:** [SpigotMC](https://www.spigotmc.org/resources/sprucebounty-%E2%80%94-player-bounties-for-paper-26-2-gui-%C2%B7-vault-%C2%B7-placeholderapi.137452/)
 · [Releases](https://github.com/spruceworks/spruce-bounty/releases)
-· Modrinth listing pending review.
+· [Modrinth](https://modrinth.com/plugin/sprucebounty)
 
 Free bounty plugin for Donut-like / Lifesteal SMPs. Built for **Paper 26.2**,
 **Java 25**, updated within 72h of every Paper drop. Part of the SpruceWorks
