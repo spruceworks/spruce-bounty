@@ -2,8 +2,8 @@ name: release
 
 # Publishing runs ONLY from a signed tag that Huy creates. Never on merge.
 #
-#   git tag -s v1.0.2 -m "SpruceBounty 1.0.2"
-#   git push origin v1.0.2
+#   git tag -s v1.1.0 -m "SpruceBounty 1.1.0"
+#   git push origin v1.1.0
 #
 # Rehearse first: Actions -> release -> Run workflow -> dry-run = true.
 # All gates run for real; nothing is uploaded anywhere.
@@ -24,12 +24,18 @@ on:
         type: boolean
         default: true
 
+# A reusable workflow can only use permissions the caller grants. The shared
+# pipeline creates the GitHub Release, which needs contents: write; the
+# repository's default token is read-only, so it must be granted here.
+permissions:
+  contents: write
+
 jobs:
   release:
     uses: spruceworks/release-pipeline/.github/workflows/release.yml@main
     with:
       plugin-name: SpruceBounty
-      modrinth-project-id: KJ7ESaxJ
-      max-jar-bytes: 10485760          # 10 MB — we ship ~97 KB
+      modrinth-project-id: ddUqbWL3      # PROJECT id — the org id KJ7ESaxJ is not it
+      max-jar-bytes: 10485760          # 10 MB — we ship ~100 KB
       dry-run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry-run || false }}
     secrets: inherit
