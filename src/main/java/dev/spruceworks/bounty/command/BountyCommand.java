@@ -26,13 +26,20 @@ import org.bukkit.entity.Player;
 public final class BountyCommand {
 
     private final SpruceBountyPlugin plugin;
-    private final BountyService bountyService;
-    private final Economy economy;
-
     private BountyCommand(SpruceBountyPlugin plugin) {
         this.plugin = plugin;
-        this.bountyService = plugin.bountyService();
-        this.economy = plugin.economy();
+    }
+
+    // Resolved per invocation, never captured at construction. The command tree
+    // is built during the COMMANDS lifecycle event, which fires before the
+    // economy hook can complete on a server where the economy provider
+    // registers late — capturing here would pin nulls forever.
+    private BountyService bountyService() {
+        return this.plugin.bountyService();
+    }
+
+    private Economy economy() {
+        return this.plugin.economy();
     }
 
     public static void register(SpruceBountyPlugin plugin) {
@@ -87,7 +94,7 @@ public final class BountyCommand {
     }
 
     private Iterable<UUID> knownTargets() {
-        return this.bountyService.allSorted(true).stream().map(Bounty::target).toList();
+        return bountyService().allSorted(true).stream().map(Bounty::target).toList();
     }
 
     private int usage(CommandContext<CommandSourceStack> context) {
@@ -109,20 +116,20 @@ public final class BountyCommand {
             return Command.SINGLE_SUCCESS;
         }
 
-        PlaceResult result = this.bountyService.place(placer, target, amount);
+        PlaceResult result = bountyService().place(placer, target, amount);
         switch (result.status()) {
             case SUCCESS -> this.plugin.messages().send(sender, "set-success",
                     Placeholder.unparsed("target", target.getName()),
-                    Placeholder.unparsed("amount", this.economy.format(result.amount())));
+                    Placeholder.unparsed("amount", economy().format(result.amount())));
             case SELF -> this.plugin.messages().send(sender, "set-self");
             case IMMUNE -> this.plugin.messages().send(sender, "set-immune",
                     Placeholder.unparsed("target", target.getName()));
             case BELOW_MIN -> this.plugin.messages().send(sender, "set-below-min",
-                    Placeholder.unparsed("amount", this.economy.format(result.amount())));
+                    Placeholder.unparsed("amount", economy().format(result.amount())));
             case ABOVE_MAX -> this.plugin.messages().send(sender, "set-above-max",
-                    Placeholder.unparsed("amount", this.economy.format(result.amount())));
+                    Placeholder.unparsed("amount", economy().format(result.amount())));
             case INSUFFICIENT_FUNDS -> this.plugin.messages().send(sender, "set-insufficient-funds",
-                    Placeholder.unparsed("amount", this.economy.format(amount)));
+                    Placeholder.unparsed("amount", economy().format(amount)));
             case ECONOMY_UNAVAILABLE -> this.plugin.messages().send(sender, "economy-error");
         }
         return Command.SINGLE_SUCCESS;
@@ -162,7 +169,7 @@ public final class BountyCommand {
 
     private int top(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        var top = this.bountyService.topByAmount(10);
+        var top = bountyService().topByAmount(10);
         if (top.isEmpty()) {
             this.plugin.messages().send(sender, "top-empty");
             return Command.SINGLE_SUCCESS;
@@ -173,7 +180,7 @@ public final class BountyCommand {
             this.plugin.messages().send(sender, "top-entry",
                     Placeholder.unparsed("rank", String.valueOf(rank++)),
                     Placeholder.unparsed("target", PlayerLookup.displayName(bounty.target(), null)),
-                    Placeholder.unparsed("amount", this.economy.format(bounty.total())));
+                    Placeholder.unparsed("amount", economy().format(bounty.total())));
         }
         return Command.SINGLE_SUCCESS;
     }
@@ -190,12 +197,12 @@ public final class BountyCommand {
             this.plugin.messages().send(sender, "player-not-found", Placeholder.unparsed("target", name));
             return Command.SINGLE_SUCCESS;
         }
-        CancelResult result = this.bountyService.cancel(player, target);
+        CancelResult result = bountyService().cancel(player, target);
         String displayName = PlayerLookup.displayName(target, name);
         switch (result.status()) {
             case SUCCESS -> this.plugin.messages().send(sender, "cancel-success",
                     Placeholder.unparsed("target", displayName),
-                    Placeholder.unparsed("refund", this.economy.format(result.refunded())));
+                    Placeholder.unparsed("refund", economy().format(result.refunded())));
             case NOT_FOUND -> this.plugin.messages().send(sender, "cancel-not-found",
                     Placeholder.unparsed("target", displayName));
             case ECONOMY_UNAVAILABLE -> this.plugin.messages().send(sender, "economy-error");

@@ -20,11 +20,9 @@ import org.bukkit.command.CommandSender;
 public final class BountyAdminCommand {
 
     private final SpruceBountyPlugin plugin;
-    private final BountyService bountyService;
 
     private BountyAdminCommand(SpruceBountyPlugin plugin) {
         this.plugin = plugin;
-        this.bountyService = plugin.bountyService();
     }
 
     public static void register(SpruceBountyPlugin plugin) {
@@ -46,8 +44,13 @@ public final class BountyAdminCommand {
                 .build();
     }
 
+    /** Resolved per invocation, never captured at construction — see BountyCommand. */
+    private BountyService bountyService() {
+        return this.plugin.bountyService();
+    }
+
     private Iterable<UUID> knownTargets() {
-        return this.bountyService.allSorted(true).stream().map(Bounty::target).toList();
+        return bountyService().allSorted(true).stream().map(Bounty::target).toList();
     }
 
     private int usage(CommandContext<CommandSourceStack> context) {
@@ -63,7 +66,7 @@ public final class BountyAdminCommand {
             this.plugin.messages().send(sender, "player-not-found", Placeholder.unparsed("target", name));
             return Command.SINGLE_SUCCESS;
         }
-        AdminRemoveResult result = this.bountyService.adminRemove(target);
+        AdminRemoveResult result = bountyService().adminRemove(target);
         String displayName = PlayerLookup.displayName(target, name);
         switch (result.status()) {
             case SUCCESS -> {
@@ -80,7 +83,7 @@ public final class BountyAdminCommand {
 
     private int clear(CommandContext<CommandSourceStack> context) {
         CommandSender sender = context.getSource().getSender();
-        AdminClearResult result = this.bountyService.adminClear();
+        AdminClearResult result = bountyService().adminClear();
         this.plugin.messages().send(sender, "admin-clear-success",
                 Placeholder.unparsed("count", String.valueOf(result.bountyCount())),
                 Placeholder.unparsed("refund", this.plugin.economy().format(result.refunded())));

@@ -4,6 +4,32 @@ All notable changes to this project are documented in this file. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-09-06
+
+### Added
+
+- **Folia support.** `folia-supported: true`. Scheduler access now goes
+  through Paper's region-aware `GlobalRegionScheduler` / `AsyncScheduler`,
+  which behave identically on plain Paper, so there is one code path for both.
+  Verified on a real Folia 26.2 (build 7) server with VaultUnlocked 2.20.1:
+  `/bounty set`, `check`, `top`, `cancel`, async SQLite writes, and a bounty
+  surviving a full server restart. Claim-on-kill uses the same primitives but
+  was not separately exercised on Folia — bots cannot fight — so if you run
+  Folia, that is the path to watch first and report on.
+
+### Fixed
+
+- **`/bounty` and `/bountyadmin` could silently fail to register.** If the
+  Vault economy provider was not yet registered when SpruceBounty enabled, the
+  one-tick retry path registered the commands from a scheduled task — and
+  Paper's lifecycle manager rejects handler registration once `onEnable` has
+  returned. The plugin stayed enabled with no commands and no error the server
+  owner would notice. Commands are now registered in `onEnable` and resolve the
+  bounty service lazily, so provider load order no longer matters. Found by the
+  Folia verification boot, where the test economy enables after the plugin —
+  but it affected plain Paper equally whenever the economy plugin loaded late.
+- Scheduled tasks are explicitly cancelled on disable before storage closes.
+
 ## [1.0.1] - 2026-07-28
 
 ### Changed

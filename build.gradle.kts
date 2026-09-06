@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "dev.spruceworks"
-version = "1.0.1"
+version = "1.1.0"
 description = "SpruceBounty — free bounty plugin for Donut-like / Lifesteal SMPs"
 
 // Single source of truth for the runtime-downloaded driver. processResources

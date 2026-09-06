@@ -40,6 +40,15 @@ public final class SpruceBountyPlugin extends JavaPlugin {
         this.messages = new Messages(this.configManager);
         this.scheduler = new SchedulerAdapter(this);
 
+        // Commands MUST be registered here. Paper's lifecycle manager rejects
+        // handler registration once onEnable has returned, so registering them
+        // from the deferred economy retry below threw IllegalStateException and
+        // left the server with no /bounty at all — silently, since the plugin
+        // stayed enabled. They resolve their service lazily, so registering
+        // before the economy is hooked is safe.
+        BountyCommand.register(this);
+        BountyAdminCommand.register(this);
+
         // Checked by name, not by class: merely referencing the Economy class
         // literal (even just for a null check) forces the JVM to load it, which
         // throws ClassNotFoundException when Vault isn't installed since Economy
@@ -89,9 +98,6 @@ public final class SpruceBountyPlugin extends JavaPlugin {
                 antiAbuse, getSLF4JLogger());
         this.bountyService.loadFromStorage();
 
-        BountyCommand.register(this);
-        BountyAdminCommand.register(this);
-
         // Optional SpruceSettings integration — no-op when that plugin is absent.
         this.settingsHook = new SettingsHook(getSLF4JLogger());
         this.settingsHook.install();
@@ -119,6 +125,9 @@ public final class SpruceBountyPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (this.scheduler != null) {
+            this.scheduler.cancelAll();
+        }
         if (this.storage != null) {
             this.storage.close();
         }

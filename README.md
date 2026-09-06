@@ -10,7 +10,7 @@ free funnel — see the closest modern competitor, BetterBounty, for context on
 the bar this matches and beats (26.2 support day one, anti-abuse,
 PlaceholderAPI, a premium upgrade path).
 
-**Folia: not supported yet.** Rechecked 2026-09-04 — PaperMC now publishes a **Folia 26.2** build (there was none when 1.0.x shipped), so the earlier "nothing to test against" reason no longer holds. What is still true: all scheduler access goes through `SchedulerAdapter`, but it wraps only the standard Bukkit scheduler, which Folia removes — the plugin will not load on Folia today. Porting means changing that one class to the region/global/async schedulers and then booting and verifying set/check/top/cancel against a real Folia 26.2 server. `folia-supported` stays unset in `plugin.yml` until that verification has actually happened. We never claim what we haven't run. Tracked as a work item on the [SpruceWorks Roadmap](https://github.com/orgs/spruceworks/projects) board.
+**Folia: supported since 1.1.0.** Verified on a real Folia 26.2 server: set, check, top, cancel, async storage, and a bounty surviving a restart. All scheduler access goes through Paper's region-aware schedulers, which are the same on plain Paper, so there is no Folia-specific code path to drift. Requires a Folia-compatible Vault — [VaultUnlocked](https://github.com/TheNewEconomy/VaultUnlocked) declares `folia-supported`; classic Vault 1.7 does not and Folia will refuse to load it. Claim-on-kill was not separately exercised on Folia (bots cannot fight); it uses the same primitives, but if you run Folia, that is the path to report on first.
 
 ## Requirements
 
